@@ -75,3 +75,6 @@ coverage.xml
 
 # Logs
 *.log
+
+#
+ansible/inventory/all.yml
