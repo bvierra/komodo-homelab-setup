@@ -19,13 +19,17 @@
   import_playbook: playbooks/04_komodo_periphery.yml
   tags: [periphery]
 
+- name: Setup NFS
+  import_playbook: playbooks/05_nfs.yml
+  tags: [nfs]
+
 - name: Bootstrap komodo-op Variables
-  import_playbook: playbooks/05_bootstrap_komodo_op.yml
+  import_playbook: playbooks/06_bootstrap_komodo_op.yml
   when: enable_komodo_op | default(false) | bool
   tags: [komodo-op, secrets]
 
 - name: Deploy komodo-op Stack
-  import_playbook: playbooks/06_deploy_komodo_op.yml
+  import_playbook: playbooks/07_deploy_komodo_op.yml
   when: enable_komodo_op | default(false) | bool
   tags: [komodo-op, secrets]
 
