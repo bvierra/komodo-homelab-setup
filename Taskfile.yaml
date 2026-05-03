@@ -1,0 +1,37 @@
+---
+version: "3"
+
+set: [pipefail]
+shopt: [globstar]
+
+includes:
+  ansible:
+    taskfile: ./ansible/Taskfile.yaml
+    dir: ./ansible/
+  tofu:
+    taskfile: ./tofu/Taskfile.yaml
+    dir: ./tofu/
+dotenv:
+  - ".env"
+
+env:
+
+tasks:
+  default: task --list
+
+  op-login:
+    desc: "Login to 1Password"
+    cmd: eval "$(op signin --account my.1password.com)"
+
+  op-recreate:
+    desc: Remove information from op, used when recreating infrastructure to prevent stale data issues
+    cmd: op item edit "Komodo" --vault "Docker" komodo_api_key=""
+
+  recreate:
+    desc: Recreate all infrastructure (destroy + deploy)
+    cmds:
+      - task op-login
+      - task op-recreate
+      - task tofu:recreate
+      - cmd: sleep 60
+      - task ansible:deploy

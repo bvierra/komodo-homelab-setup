@@ -1,0 +1,23 @@
+- name: Create onboarding key
+  ansible.builtin.uri:
+    url: "{{ komodo_base_url }}/write"
+    method: POST
+    headers:
+      X-Api-Key: "{{ komodo_api_key }}"
+      X-Api-Secret: "{{ komodo_api_secret }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      type: "CreateOnboardingKey"
+      params:
+        name: "Setup"
+        expires: "{{ ((now(fmt='%s') | int) + 3600) * 1000 }}"
+        privileged: true
+        create_builder: true
+    status_code: 200
+  register: onboarding_key_result
+  tags: [api, onboarding]
+
+- name: Set komodo_onboarding_key fact
+  ansible.builtin.set_fact:
+    komodo_onboarding_key: "{{ onboarding_key_result.json.private_key }}"

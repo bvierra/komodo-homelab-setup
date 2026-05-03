@@ -1,0 +1,38 @@
+
+- name: List onboarding keys
+  ansible.builtin.uri:
+    url: "{{ komodo_base_url }}/read"
+    method: POST
+    headers:
+      X-Api-Key: "{{ komodo_api_key }}"
+      X-Api-Secret: "{{ komodo_api_secret }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      type: "ListOnboardingKeys"
+      params: {}
+    status_code: 200
+  register: list_onboardingkey_result
+  tags: [api, onboarding]
+
+- name: Set komodo_onboarding_pub_key fact
+  ansible.builtin.set_fact:
+    komodo_onboarding_pub_key: "{{ list_onboardingkey_result.json[0].public_key }}"
+  tags: [api, onboarding]
+
+
+- name: Delete onboarding key
+  ansible.builtin.uri:
+    url: "{{ komodo_base_url }}/write"
+    method: POST
+    headers:
+      X-Api-Key: "{{ komodo_api_key }}"
+      X-Api-Secret: "{{ komodo_api_secret }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      type: "DeleteOnboardingKey"
+      params:
+        public_key: "{{ komodo_onboarding_pub_key }}"
+    status_code: 200
+  tags: [api, onboarding]

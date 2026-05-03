@@ -1,0 +1,63 @@
+---
+# =============================================================================
+# KOMODO INVENTORY - SINGLE SOURCE OF TRUTH
+# =============================================================================
+# All configuration centralized in this file for maximum simplicity
+
+all:
+  vars:
+    # Network & Connection Settings
+    ansible_user: root
+    ansible_ssh_private_key_file: ~/.ssh/id_rsa
+
+    # Komodo Core Settings
+    komodo_install_dir: "/opt/komodo"
+    komodo_port: 9120
+    komodo_mongo_port: 27017
+    komodo_mongo_cache_size_gb: 2
+
+    # Komodo Periphery Settings (bpbradley.komodo v2.x, outbound connection mode)
+    komodo_periphery_port: 8120
+    # Track whatever version Core reports on its /version endpoint. Keeps Core/Periphery coupled
+    # and makes `make periphery-upgrade` a no-argument way to re-align after a Core bump.
+    komodo_periphery_version: "core"
+    komodo_user: "komodo"
+    komodo_group: "komodo"
+    komodo_root_directory: "/etc/komodo"
+
+    # Computed URLs
+    komodo_base_url: "http://{{ hostvars[groups['core'][0]]['ansible_host'] }}:{{ komodo_port }}"
+    komodo_core_http_address: "http://{{ komodo_base_url }}"
+    komodo_core_address: "wss://{{ hostvars[groups['core'][0]]['ansible_host'] }}"
+    komodo_server_enabled: false
+
+
+    # Authentication Settings
+    komodo_auth_base_url: "{{ komodo_core_http_address }}"
+    komodo_auth_admin_username: "{{ lookup('community.general.onepassword', 'Komodo', field='username', vault='Docker') }}"
+    komodo_auth_admin_password: "{{ lookup('community.general.onepassword', 'Komodo', field='password', vault='Docker') }}"
+    komodo_auth_service_user: "komodo-automation"
+    komodo_auth_service_user_description: "Service user for automated deployments and API access"
+    komodo_auth_api_key_name: "deployment-api-key"
+
+    # API Credentials (1Password lookups)
+    komodo_core_api_key: "{{ lookup('community.general.onepassword', 'Komodo', field='komodo_api_key', vault='Docker') }}"
+    komodo_core_api_secret: "{{ lookup('community.general.onepassword', 'Komodo', field='komodo_api_secret', vault='Docker') }}"
+
+    # komodo-op Configuration (Secret Management)
+    enable_komodo_op: true  # Set to true to enable komodo-op deployment
+
+    # Resource Syncs Configuration (GitOps)
+    komodo_resource_syncs_repo: "github_user/komodo-resource-syncs"
+    komodo_resource_syncs_branch: "main"
+    komodo_resource_syncs_git_account: "github_user"
+    komodo_service_scope: "system"
+
+  children:
+    # Control machine (not managed by infrastructure playbooks)
+    control:
+      hosts:
+        localhost:
+          ansible_connection: local
+
+

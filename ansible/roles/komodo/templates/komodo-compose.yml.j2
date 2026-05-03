@@ -1,0 +1,58 @@
+################################
+# 🦎 KOMODO COMPOSE - MONGO 🦎 #
+################################
+
+## This compose file will deploy:
+##   1. MongoDB
+##   2. Komodo Core
+##   3. Komodo Periphery
+
+services:
+  mongo:
+    image: mongo
+    labels:
+      komodo.skip: # Prevent Komodo from stopping with StopAllContainers
+    command: --quiet --wiredTigerCacheSizeGB {{ komodo_mongo_cache_size_gb }}
+    restart: unless-stopped
+    ports:
+      - {{ komodo_mongo_port }}:27017
+    volumes:
+      - mongo-data:/data/db
+      - mongo-config:/data/configdb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${KOMODO_DATABASE_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${KOMODO_DATABASE_PASSWORD}
+
+  core:
+    image: ghcr.io/moghtech/komodo-core:${COMPOSE_KOMODO_IMAGE_TAG:-2}
+    labels:
+      komodo.skip: # Prevent Komodo from stopping with StopAllContainers
+    init: true
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    ports:
+      - {{ komodo_port }}:9120
+    env_file: ./compose.env
+    environment:
+      KOMODO_DATABASE_ADDRESS: mongo:27017
+    volumes:
+      ## Core/Periphery PKI key material (core.pub / periphery.pub)
+      - keys:/config/keys
+      ## Dated database backups - https://komo.do/docs/setup/backup
+      - ${COMPOSE_KOMODO_BACKUPS_PATH}:/backups
+      ## Store sync files on server
+      - ${PERIPHERY_ROOT_DIRECTORY}/syncs:/syncs
+      ## Optionally mount a custom core.config.toml
+      # - /path/to/core.config.toml:/config/config.toml
+    ## Configure DNS to resolve Tailscale hostnames (needed for git/OIDC/resource-sync
+    ## endpoints that live on the Tailnet).
+    dns:
+      - 10.10.20.1  # Tailscale DNS
+
+volumes:
+  # Mongo
+  mongo-data:
+  mongo-config:
+  # Core / Periphery PKI keys
+  keys:
