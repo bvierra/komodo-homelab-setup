@@ -1,0 +1,34 @@
+- name: Install NFS client (Debian)
+  ansible.builtin.apt:
+    name: nfs-common
+    state: present
+    update_cache: true
+  when: ansible_os_family == "Debian"
+# Create mount point directories
+- name: Create NFS mount points
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    mode: '0755'
+  loop: "{{ nfs_mounts }}"
+# Mount NFS shares and add to fstab
+- name: Mount NFS shares
+  ansible.posix.mount:
+    path: "{{ item.path }}"
+    src: "{{ item.src }}"
+    fstype: nfs
+    opts: "{{ item.opts }}"
+    state: mounted
+  loop: "{{ nfs_mounts }}"
+# Verify the mounts are working
+- name: Verify NFS mounts are accessible
+  ansible.builtin.stat:
+    path: "{{ item.path }}"
+  loop: "{{ nfs_mounts }}"
+  register: mount_check
+- name: Report mount status
+  ansible.builtin.debug:
+    msg: "Mount {{ item.item.path }} exists: {{ item.stat.exists }}, is_dir: {{ item.stat.isdir | default(false) }}"
+  loop: "{{ mount_check.results }}"
+  loop_control:
+    label: "{{ item.item.path }}"

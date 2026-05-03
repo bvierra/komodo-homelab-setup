@@ -1,0 +1,8 @@
+nfs_server_ip: "192.168.1.1"
+nfs_server_path: "/srv/data"
+nsf_mount_path: "/mnt/nfs"
+
+nfs_mounts:
+  - src: "{{ nfs_server_ip }}:{{ nfs_server_path }}"
+    path: "{{ nfs_mount_path }}"
+    opts: "nfsvers=4.2,rw,hard,intr,noatime,timeo=600,retrans=2,_netdev"

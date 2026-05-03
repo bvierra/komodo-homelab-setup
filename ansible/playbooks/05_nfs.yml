@@ -1,0 +1,15 @@
+---
+- name: Install NFS onto docker servers
+  hosts: periphery
+  become: true
+  gather_facts: true
+  vars:
+    nfs_mounts: "{{ all_nfs_mounts }}"
+
+  pre_tasks:
+    - name: Skip if nfs client is not enabled
+      ansible.builtin.meta: end_host
+      when: nfs_enable == false
+  roles:
+    - role: nfs_client
+      tags: [nfs]

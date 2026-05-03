@@ -71,6 +71,11 @@ resource "proxmox_virtual_environment_vm" "vm" {
         gateway = var.cluster.gateway
       }
     }
+    ip_config {
+      ipv4 {
+        address = "${each.value.network_config["net1"].ip}/24"
+      }
+    }
   }
 
   network_device {

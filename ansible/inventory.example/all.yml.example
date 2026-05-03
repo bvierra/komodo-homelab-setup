@@ -53,6 +53,8 @@ all:
     komodo_resource_syncs_git_account: "github_user"
     komodo_service_scope: "system"
 
+    nfs_enable: true
+
   children:
     # Control machine (not managed by infrastructure playbooks)
     control:

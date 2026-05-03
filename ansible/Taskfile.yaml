@@ -13,10 +13,6 @@ tasks:
     desc: Check connectivity to all hosts in the Ansible inventory
     cmd: ansible all ${ANSIBLE_VERBOSE} -i inventory/ -m ping
 
-  install-00-op-item:
-    desc: Create 1Password item for Komodo credentials
-    cmd: ansible-playbook ${ANSIBLE_VERBOSE} -i inventory/ playbooks/00_op_vars.yml
-
   deploy:
     desc: Deploy complete Komodo infrastructure
     cmd: ansible-playbook ${ANSIBLE_VERBOSE} -i inventory/ site.yml
@@ -37,13 +33,21 @@ tasks:
     desc: 🔗 Deploy Komodo Periphery
     cmd: ansible-playbook ${ANSIBLE_VERBOSE} -i inventory/ playbooks/04_komodo_periphery.yml
 
-  install-05-komodo-op-vars:
-    desc: 🔐 Bootstrap komodo-op variables...
-    cmd: ansible-playbook ${ANSIBLE_VERBOSE} -i inventory/ playbooks/05_bootstrap_komodo_op.yml
+  install-05-nfs:
+    desc: 🔗 Deploy Komodo Periphery
+    cmd: ansible-playbook ${ANSIBLE_VERBOSE} -i inventory/ playbooks/05_nfs.yml
 
-  install-06-komodo-op:
+  install-06-komodo-op-vars:
+    desc: 🔐 Bootstrap komodo-op variables...
+    cmd: ansible-playbook ${ANSIBLE_VERBOSE} -i inventory/ playbooks/06_bootstrap_komodo_op.yml
+
+  install-07-komodo-op:
     desc: 🔐 Deploy komodo-op stack...
-    cmd: ansible-playbook ${ANSIBLE_VERBOSE} -i inventory/ playbooks/06_deploy_komodo_op.yml
+    cmd: ansible-playbook ${ANSIBLE_VERBOSE} -i inventory/ playbooks/07_deploy_komodo_op.yml
+
+  install-08-komodo-op:
+    desc: 🔐 Deploy app-syncs...
+    cmd: ansible-playbook ${ANSIBLE_VERBOSE} -i inventory/ playbooks/08_app_syncs.yml
 
   inventory:
     desc: View Ansible Inventory as built by Terraform
